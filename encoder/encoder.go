@@ -1,14 +1,8 @@
 package encoder
 
 import (
-	// "bytes"
 	"encoding/binary"
-	// "encoding/json"
-	// "github.com/actgardner/gogen-avro/v7/generic"
 	"github.com/landoop/schema-registry"
-	// "github.com/rs/zerolog/log"
-
-	"fmt"
 	"github.com/linkedin/goavro/v2"
 )
 
