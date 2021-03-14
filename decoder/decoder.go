@@ -13,7 +13,7 @@ type Decoder struct {
 	client *schemaregistry.Client
 }
 
-func New(url string) (decoder Decoder) {
+func New(url string) (decoder Decoder, err error) {
 	decoder.client, err = schemaregistry.NewClient(url)
 	return
 }
@@ -34,7 +34,7 @@ func (decoder Decoder) Decode(data []byte, event interface{}) (err error) {
 		return
 	}
 
-	codec, err := getSchemaCodec(decoder.Registry, int(schemaID))
+	codec, err := getSchemaCodec(decoder.client, int(schemaID))
 	if err != nil {
 		log.Error().Msgf("failed to get schema codec %v", err)
 		return
@@ -46,7 +46,7 @@ func (decoder Decoder) Decode(data []byte, event interface{}) (err error) {
 		return
 	}
 
-	data, err := json.Marshal(eventMap)
+	data, err = json.Marshal(eventMap)
 	if err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (decoder Decoder) Decode(data []byte, event interface{}) (err error) {
 	return
 }
 
-func getSchemaCodec(registry SchemaRegistry, schemaID int) (codec *generic.Codec, err error) {
+func getSchemaCodec(registry *schemaregistry.Client, schemaID int) (codec *generic.Codec, err error) {
 
 	codec, ok := schemaCodecMapping[schemaID]
 	if ok {
@@ -67,8 +67,7 @@ func getSchemaCodec(registry SchemaRegistry, schemaID int) (codec *generic.Codec
 	if err != nil {
 		return
 	}
-	existingSchema := avro.NewPatientEvent().Schema()
-	codec, err = generic.NewCodecFromSchema([]byte(schema), []byte(existingSchema))
+	codec, err = generic.NewCodecFromSchema([]byte(schema), []byte(schema))
 	if err != nil {
 		return
 	}
@@ -76,3 +75,5 @@ func getSchemaCodec(registry SchemaRegistry, schemaID int) (codec *generic.Codec
 	schemaCodecMapping[schemaID] = codec
 	return
 }
+
+var schemaCodecMapping = map[int]*generic.Codec{}
